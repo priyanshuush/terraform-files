@@ -1,17 +1,14 @@
 provider "aws" {
-    region = "ap-south-1"
-    secret_key = ""
-    access_key = ""
+  region = "${var.aws_region}"
 }
 
-terraform {
- backend "s3" {
-    encrypt = false
-    bucket = "tf-state-s3"
-    dynamodb_table = "tf-state-lock-dynamo"
-    key = "path/path/terraform-tfstate"
-    region = "ap-south-1"
- }
+resource "aws_s3_bucket" "b" {
+  bucket = "my-tf-test-bucket"
+
+  tags = {
+    Name        = "My bucket"
+    Environment = "Dev"
+  }
 }
 
 resource "aws_iam_role" "iam_for_lambda" {
@@ -44,8 +41,8 @@ resource "aws_lambda_function" "test_lambda" {
 
   # The filebase64sha256() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the base64sha256() function and the file() function:
-  source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
-  # source_code_hash = filebase64sha256("lambda_function_payload.zip")
+  # source_code_hash = "${base64sha256(file("lambda_function_payload.zip"))}"
+  source_code_hash = filebase64sha256("lambda_function_payload.zip")
 
   runtime = "nodejs12.x"
 
@@ -55,3 +52,7 @@ resource "aws_lambda_function" "test_lambda" {
     }
   }
 }
+
+
+
+
